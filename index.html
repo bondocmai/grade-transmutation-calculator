@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Transmutation Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #eef6ff, #f7f9fc);
+    color: #263238;
+  }
+  .card {
+    width: min(460px, 100%);
+    background: white;
+    border-radius: 22px;
+    padding: 30px 26px 26px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.12);
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #e8f1ff;
+    color: #315f9c;
+    margin-bottom: 10px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(25px, 7vw, 34px);
+    line-height: 1.15;
+  }
+  .subtitle {
+    margin: 0 0 26px;
+    color: #66737c;
+    font-size: 15px;
+  }
+  label {
+    display: block;
+    text-align: left;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  input {
+    width: 100%;
+    font-size: 24px;
+    text-align: center;
+    padding: 14px 12px;
+    border: 2px solid #d8dee5;
+    border-radius: 13px;
+    outline: none;
+    transition: .2s;
+  }
+  input:focus {
+    border-color: #5d8fd3;
+    box-shadow: 0 0 0 4px rgba(93,143,211,.14);
+  }
+  .result {
+    margin-top: 24px;
+    padding: 20px 16px;
+    border-radius: 16px;
+    background: #eaf6ec;
+    border: 1px solid #cce8d1;
+  }
+  .result-label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #477451;
+  }
+  #result {
+    margin-top: 5px;
+    font-size: 46px;
+    font-weight: 800;
+    color: #2e6b3b;
+    min-height: 53px;
+  }
+  .message {
+    min-height: 22px;
+    margin-top: 10px;
+    color: #a15b00;
+    font-size: 14px;
+  }
+  .note {
+    margin-top: 18px;
+    color: #7a858c;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 12px;
+    border: 0;
+    border-radius: 11px;
+    background: #eef2f6;
+    color: #45545e;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button:hover { background: #e3e8ed; }
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">3RD TERM</div>
+    <h1>Grade Transmutation Calculator</h1>
+    <p class="subtitle">Enter your computed initial grade below.</p>
+
+    <label for="initialGrade">Initial Grade</label>
+    <input id="initialGrade" type="number" min="0" max="100" step="0.01"
+           inputmode="decimal" placeholder="e.g. 81.95" autocomplete="off">
+
+    <div class="result">
+      <div class="result-label">Transmuted Grade</div>
+      <div id="result">—</div>
+    </div>
+
+    <div class="message" id="message"></div>
+    <button id="clearBtn" type="button">Clear</button>
+
+    <div class="note">
+      Enter a grade from 0 to 100. The calculator uses the official
+      transmutation table provided for this calculator.
+    </div>
+  </main>
+
+<script>
+const table = [
+  [0.00, 60],
+  [4.68, 61],
+  [9.35, 62],
+  [14.01, 63],
+  [18.68, 64],
+  [23.35, 65],
+  [28.01, 66],
+  [32.68, 67],
+  [37.34, 68],
+  [42.01, 69],
+  [46.67, 70],
+  [51.34, 71],
+  [56.01, 72],
+  [60.67, 73],
+  [65.34, 74],
+  [70.00, 75],
+  [71.18, 76],
+  [72.36, 77],
+  [73.54, 78],
+  [74.72, 79],
+  [75.90, 80],
+  [77.08, 81],
+  [78.26, 82],
+  [79.44, 83],
+  [80.62, 84],
+  [81.80, 85],
+  [82.98, 86],
+  [84.16, 87],
+  [85.34, 88],
+  [86.52, 89],
+  [87.70, 90],
+  [88.88, 91],
+  [90.06, 92],
+  [91.24, 93],
+  [92.42, 94],
+  [93.60, 95],
+  [94.78, 96],
+  [95.96, 97],
+  [97.14, 98],
+  [98.32, 99],
+  [99.50, 100]
+];
+
+function transmute(value) {
+  if (!Number.isFinite(value) || value < 0 || value > 100) return null;
+  let answer = null;
+  for (const row of table) {
+    if (value >= row[0]) answer = row[1];
+    else break;
+  }
+  return answer;
+}
+
+const input = document.getElementById('initialGrade');
+const result = document.getElementById('result');
+const message = document.getElementById('message');
+const clearBtn = document.getElementById('clearBtn');
+
+function update() {
+  const raw = input.value.trim();
+  if (raw === '') {
+    result.textContent = '—';
+    message.textContent = '';
+    return;
+  }
+
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0 || value > 100) {
+    result.textContent = '—';
+    message.textContent = 'Please enter a grade from 0 to 100.';
+    return;
+  }
+
+  const answer = transmute(value);
+  if (answer === null) {
+    result.textContent = '—';
+    message.textContent = 'Please enter a valid initial grade.';
+    return;
+  }
+
+  result.textContent = String(answer);
+  message.textContent = '';
+}
+
+input.addEventListener('input', update);
+clearBtn.addEventListener('click', () => {
+  input.value = '';
+  update();
+  input.focus();
+});
+</script>
+</body>
+</html>
